@@ -1,5 +1,10 @@
 require 'sinatra'
+require 'sinatra/base'
 
-get "/" do
-  "this is a test"
+class Blog < Sinatra::Base; end
+
+class Blog
+  get "/" do
+    erb :index
+  end
 end
