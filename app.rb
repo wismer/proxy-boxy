@@ -16,7 +16,7 @@ class Blog
     erb :intro
   end
 
-  get "/rss" do
+  get "/rss", :provides => ['rss', 'atom', 'xml'] do
     rss = RSS::Maker.make("2.0") do |maker|
       maker.channel.language = "en"
       maker.channel.author = "Matt Long"
@@ -30,6 +30,8 @@ class Blog
         item.updated = Time.new(2014, 9, 8).to_s
       end
     end
+
+    rss.to_xml
   end
 
   get "/:anything" do
