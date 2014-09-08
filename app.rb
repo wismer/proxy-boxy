@@ -4,7 +4,12 @@ require 'rss'
 class Blog < Sinatra::Base; end
 
 class Blog
-  get "/blog" do
+
+  get "/" do
+    erb :index
+  end
+
+  get "/blog/" do
     erb :index
   end
 
