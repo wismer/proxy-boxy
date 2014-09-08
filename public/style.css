@@ -1,0 +1,48 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+
+html {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.5em;
+}
+
+#sidebar {
+  width: 200px;
+  margin: 10px;
+  float: left;
+}
+
+div.quote {
+  text-align: center;
+}
+
+span.comment {
+  color: red;
+}
+
+body {
+  margin: 0px;
+  height: 2000px;
+}
+
+#sidebar nav {
+  margin: 0px;
+}
+
+
+#sidebar li {
+  list-style-type: none;
+}
+
+#sidebar li a {
+  color: black;
+  text-decoration: none;
+  text-align: right;
+}
+
+ul.posts {
+  margin-left: -20px;
+}
+
+#content {
+  margin: 30px 300px 0 300px;
+}

@@ -1,0 +1,183 @@
+<div class='posts'>
+
+  <div id='first-day'>
+    <h3>My First Day</h3>
+    <div class="quote">
+      "'But difficult and disagreeable things happen in life.' Well, aren't difficulties found on Olympia? Don't you get hot? And crowded? Isn't bathing a problem? Don't you get soaked through in your seats when it rains? Don't you finally get sick of the noise, the shouting and other irritations? I can only suppose that you weigh all those negatives against the worth of the show, and choose, in the end, to be patient and put up with it all. Furthermore, you have inner strengths that enable you to bear up with difficulties of every kind. You have been given fortitude, courage and patience. Why should I worry about what happens if I am armed with the virtue of fortitude? Nothing can trouble or upset me, or even seem annoying. Instead of meeting misfortune with groans and tears, I will call upon the faculty especially provided to deal with it." ~ Epictetus (AD c. 55 - 135)
+    </div>
+  </div>
+  <div id='parsing'>
+    <h3>Parsing</h3>
+
+    <p>
+      I never really worried about efficiency in programming before. In the past, the things I worked on at Hacker School and prior to it were generally over small things that didn't require speed. They just needed to simply work. But what if I were to work on something that was parsing a massive document? What then?
+    </p>
+
+    <h3>Glorious, Reliable Data</h3>
+
+    <p>
+      I've been helping out on a small <a href="http://github.com/dwillis/irs527">project</a> that parses IRS documents that pertain to <a href="http://www.law.cornell.edu/uscode/26/527.html">Section 527</a> of the IRS code (They are more known colloquially as Super PAC's, but that's a bit of a misnomer - see <a href="#footnote">here</a> for clarification). I won't bore you with what each form means (I'm not entirely certain, to be honest), but here's the breakdown of the forms involved - There are two primary forms, form 8871 and 8872. Each of these will sometimes, but not always require additional forms to be present. I'll refer to them as supplementary from here on out.
+    </p>
+    <p>
+      The IRS provides to the public records of every organization registered as a 527 and it is a humongous text file - some 380 MB in size. Generally each line represents either a primary or supplementary form, so all I have to do is to make a constructor for each line that gets read. Easy enough, right? Not quite. This is what a single line looks like in the wild:
+      <div>
+        <code>
+          1|8871|9607016|1|0|0|454919869|BOB SQUERI FOR DISTRICT 7 SUPERVISOR 2012|650 TOWNSEND ST STE 234||San Francisco|CA|94103||crbrodeur@gmail.com|20120312|Bob Squeri|650 TOWNSEND ST STE 234||San Francisco|CA|94103||Bob Squeri|650 TOWNSEND ST STE 234||San Francisco|CA|94103||650 TOWNSEND ST STE 234||San Francisco|CA|94103||1|CA|0|To elect the candidate Robert Squeri to the office of Supervisor in San Francisco, California, by influencing registered voters to vote for him in the November 6th, 2012 election.||2012-04-03 15:09:32|1|0
+        </code>
+      </div>
+    </p>
+    <p>
+      I knew from the beginning that loading the entire contents with Ruby's <code>File.readlines</code> would not be an ideal solution for beginning the conversion process, as it loads everything into memory. This can work well for a small document, but not ideal for larger ones. Instead, I went with using File's instance method <code>readline</code>. The parser would call it continously in a loop, breaking only until the end of the file was reached. Whenever readline gets invoked, a string would be split, anaylzed for the form type, and then processed appropriately. So this is what it started to look like:
+      <pre>
+        file = File.open("data.txt")
+        loop do
+          break if file.eof?
+          line = file.readline.split("|")
+          form = Irs527::Form.new(line)
+          form.parse!
+          <span class='comment'># save somewhere</span>
+        end
+        <span class='comment'># return that collection</span>
+      </pre>
+    </p>
+    <p>
+      Initally, this worked well. Memory usage was less (at first), but still slow. I'm collecting all the forms, so I'm really just slowly rebuilding the entire document, this time as ruby objects. Works fast at first, but it starts to slow down half-way. And it also sometimes breaks at that point anyway because I discovered that not all lines represent a single form! Crap. Now I have to account for these abberations.
+    </p>
+
+    <h3>No Good, Duplicitous Data</h3>
+    <div>
+      <pre>
+        DB-LIBRARY error:
+        \tSome character(s) could not be converted into client's character set.  Unconverted bytes were changed to question marks ('?')
+        Operating-system error:
+        \tSuccess
+      </pre>
+    </div>
+
+    <p>
+      I found that hidden inside. It screwed up my parser as it didn't recognize those lines as forms but it tried to parse it anyway, resulting in a <code>NilClass</code> error. Avoiding those wasn't terribly hard to implement, so I started peeking at each line first by checking to see if was a valid form. That worked, but then I ran into another problem. One form has a field for a "mission statement" which can include newlines. My trust in having "each line, a form it shall be" was shot. So again, I came up with some way to account for that. However, at this point the code started to look convoluted. Worse, I was still not resolving the memory issue. So I tried brainstorming. What field do all the forms have in common? Answer: their EIN (Electronic Identification Number). So the collection object would be a hash-key object. Perfect. Did it help my efficiency issue?
+    </p>
+
+    <h3>It Seemed Like a Good Idea at the Time</h3>
+
+    <div>
+      <pre>
+        records = {}
+        file = File.open("data.txt")
+        loop do
+          break if file.eof?
+          if Irs527::Form.valid?(line)
+            line = file.readline.split("|")
+            if @form.incomplete? <span class='comment'># => this accounts for those truncated lines</span>
+              @form.update(line)
+            else
+              @form = Irs527::Form.new(line)
+              @form.parse!
+              if records[@form.ein]
+                records[@form.ein] << @form
+              else
+                records[@form.ein] = [@form]
+              end
+            end
+          end
+        end
+        return records
+      </pre>
+    </div>
+
+    <p>
+      Well, not really. It did make accessing the data easier, at least. Instead of iterating over an array of forms to collect data that pertain to a specific organization by EIN, you can simply do <code>records[ein]</code> and it will then return a much smaller array of forms for that org. But this doesn't fix the efficiency issue. In fact, it probably made things worse. So now what?
+    </p>
+
+    <h3>Use the Offset, Luke.</h3>
+
+    <p>
+      In all practicality, loading this much data just so you can access forms for a single organization is overkill. The alternative could be to make a database, and then store the data that way. However, that raises other issues - I'd have to juggle 7 tables, one for each type of form there is and develop a method for updating the forms for new additions. But that's an expensive process, as the IRS does not provide an "amended" list. At this point, I didn't know what to do. I spent some time exploring the DB idea until I hit on something that rung familiar to me. In a database table, you can create an index of a table that allows for faster lookup in exchange for a slower writing of new entries. Could I import that thinking to this project? Could I "index" each form? No. Wait, ...maybe?
+    </p>
+    <p>
+      The way Ruby's <code>readline</code> method works is that it "looks" ahead for a seperator, a point in text (in this case, the "\n") where it can stop reading and return what it found - it's a less complicated version of <code>IO.read</code>. That class method requires the byte offset of the file you are reading and the number of bytes from there that you want to load - so its tricky. I relied on this heavily when I wrote my <a href="https://github.com/wismer/bit-torrent">BitTorrent</a> project for HS, so I imported that thinking into this.
+    </p>
+
+    <h3>
+      Ad Data Per Aspera
+    </h3>
+
+    <p>
+      The <code>IO</code> class also provides a handy <code>pos</code> method that returns the current offset in the file. I kept the <code>loop</code> and allowed the parsing to continue as normal, but this time I didn't bother checking to see if the string being evaluated was valid or not. All I wanted was primary form (8871 or 8872) first and record the offset. Until another primary form was found, the most recent records' length is incremented by the length of each line being read. That's it. Nothing more or less.
+
+      <div>
+        <pre>
+          file = File.open("data.txt")
+          records = {}
+          loop do
+            break if file.eof?
+            offset = file.pos
+            line = file.readline.encode('UTF-8', invalid: :replace, replace: ' ')
+
+            if line[0..1] == "1|" || line[0..1] == "2|" # => determines if the line belongs to a "primary" form
+              form = Irs527::Form.new(line.split("|"))
+              @ein = form.type[:ein] <span class='comment'># => create the EIN as a key as before</span>
+              if records[@ein]
+                records[@ein] << { offset: offset, length: line.length }
+              else
+                records[@ein] = [{ offset: offset, length: line.length }]
+              end
+            else
+              <span class='comment'># if it's not a primary form, then it simply increments the length of previous entry</span>
+              records[@ein][-1][:length] += line.length
+            end
+          end
+
+          <span class='comment'># produces something like: records["123123123"] => [{offset: 9, length: 376}, {offset: 1231453, length: 487}]</span>
+        </pre>
+      </div>
+      Now I have a hash with something like 11,000 unique EIN's, each pointing to an array of at least one or more chunks of data that exist within the file. Whenever <code>records[EIN]</code> gets called, this happens:
+      <div>
+        <pre>
+          def self.parse_form(data_chunk)
+            forms = data_chunk.split("\n").map { |form| form.split("|") }
+            <span class='comment'># As before, the parser assumes each line is a form, with the first element being the primary type</span>
+
+            primary_form = Irs527::Form.new(forms.shift)
+
+            while primary_form.incomplete?
+              <span class='comment'># the form with the missing data gets fixed.</span>
+              primary_form << forms.shift
+            end
+
+            primary_form = primary_form.create!
+
+            forms.each do |form|
+              <span class='comment'># Here's where I chuck out the useless bits.</span>
+              if Form.valid?(form)
+                form = Form.new(form)
+                <span class='comment'># since this form is suppementary, it updates the primary one.</span>
+                form.update(primary_form)
+              end
+            end
+
+            primary_form.line = ''
+            return primary_form
+          end
+        </pre>
+      </div>
+
+      If I want to generate the index, I don't want to read the entire file again. Instead, I'll record this information into a csv file. When I want to reconstruct the index in memory, I simply construct it this way:
+      <div>
+        <pre>
+          def self.load(csv_file)
+            forms = {}
+
+            CSV.foreach(csv_file) do |row|
+              ein = row.shift
+
+              forms[ein] = row.each_slice.map { |form| { offset: form[0], length: form[1] } }
+            end
+            return forms
+          end
+        </pre>
+      </div>
+      It's great for when you want specific information on an organization, but don't want to be forced to read the entire file in order to do so. It's still a work in progress, but having it be done this way certainly is less cumbersome. Fun fun.
+    </p>
+  </div>
+</div>
