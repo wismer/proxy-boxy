@@ -1,11 +1,4 @@
 <div class='posts'>
-
-  <div id='first-day'>
-    <h3>My First Day</h3>
-    <div class="quote">
-      "'But difficult and disagreeable things happen in life.' Well, aren't difficulties found on Olympia? Don't you get hot? And crowded? Isn't bathing a problem? Don't you get soaked through in your seats when it rains? Don't you finally get sick of the noise, the shouting and other irritations? I can only suppose that you weigh all those negatives against the worth of the show, and choose, in the end, to be patient and put up with it all. Furthermore, you have inner strengths that enable you to bear up with difficulties of every kind. You have been given fortitude, courage and patience. Why should I worry about what happens if I am armed with the virtue of fortitude? Nothing can trouble or upset me, or even seem annoying. Instead of meeting misfortune with groans and tears, I will call upon the faculty especially provided to deal with it." ~ Epictetus (AD c. 55 - 135)
-    </div>
-  </div>
   <div id='parsing'>
     <h3>Parsing</h3>
 
@@ -114,7 +107,7 @@
             offset = file.pos
             line = file.readline.encode('UTF-8', invalid: :replace, replace: ' ')
 
-            if line[0..1] == "1|" || line[0..1] == "2|" # => determines if the line belongs to a "primary" form
+            if line[0..1] == "1|" || line[0..1] == "2|" <span class='comment'># => determines if the line belongs to a "primary" form</span>
               form = Irs527::Form.new(line.split("|"))
               @ein = form.type[:ein] <span class='comment'># => create the EIN as a key as before</span>
               if records[@ein]
@@ -171,7 +164,7 @@
             CSV.foreach(csv_file) do |row|
               ein = row.shift
 
-              forms[ein] = row.each_slice.map { |form| { offset: form[0], length: form[1] } }
+              forms[ein] = row.each_slice(2).map { |form| { offset: form[0], length: form[1] } }
             end
             return forms
           end
@@ -180,4 +173,6 @@
       It's great for when you want specific information on an organization, but don't want to be forced to read the entire file in order to do so. It's still a work in progress, but having it be done this way certainly is less cumbersome. Fun fun.
     </p>
   </div>
+
+  <div id='footnote'>In general, 527 orgs cannot support or be against a specific candidate. They have to be vague - a gray area that people can easily exploit in campaign finance law. It's a depressing topic.</div>
 </div>

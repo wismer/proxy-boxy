@@ -2,7 +2,7 @@
 
 html {
   font-family: 'Open Sans', sans-serif;
-  font-size: 1.5em;
+  font-size: 1.25em;
 }
 
 #sidebar {
@@ -45,4 +45,9 @@ ul.posts {
 
 #content {
   margin: 30px 300px 0 300px;
+}
+
+#footnote {
+  font-size: 0.75em;
+  padding-bottom: 100px
 }
