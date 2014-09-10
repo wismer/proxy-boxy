@@ -26,7 +26,7 @@ class Blog
       maker.channel.language = "en"
       maker.channel.author = "Matt Long"
       maker.channel.updated = Time.new(2014, 9, 8)
-      maker.channel.link = "http://lankstrosity.us/rss/new.rss"
+      maker.channel.link = "http://lankstrosity.us/new.rss"
       maker.channel.title = "Parsing"
       maker.channel.description = "Parsing a HUGE file"
       maker.items.new_item do |item|
