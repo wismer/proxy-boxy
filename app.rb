@@ -6,7 +6,6 @@ require 'json'
 class Blog < Sinatra::Base; end
 
 class Blog
-  DB = Sequel.connect("sqlite://magic.db")
   get "/" do
     erb :index
   end
