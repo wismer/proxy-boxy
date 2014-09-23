@@ -1,6 +1,6 @@
 <div class='posts'>
-  <div id='lambdas'>
-    <h2>Revisiting Ruby's Thread model - 2014-09-22</h2>
+  <div id='threads'>
+    <h2>Revisiting Ruby's Thread Class - 2014-09-22</h2>
     <p>
       Threading in Ruby is strange. Ruby's <code>Thread</code> class is, from what I understand, the languages' answer to having concurrency (sometimes described as having only "quasi" concurrency - I don't know why that is). I tried using it in my BitTorrent client (unsuccesfully) months ago when I was writing it, and I tried again yesterday with limited success. For the first time the intention was to have threads be a primary way of handling numerous peers and their respective connection states (initializing connection, requesting/receiving pieces). It didn't work out quite out the way I was hoping it would - I was using blocking IO in my TCP connections, so my threads would terminate themselves early and often (again, I don't why). Non-blocking IO turned out to be much simpler and easier to implement without threads, so I ended up going with that. Still, I felt like I was missing out. I was hoping to write up something more concrete on this topic - conceptually I thought using threads would make the download process faster, but they didn't. In fact, the download process seems slightly slower (and the client starts crapping out on me near the end).
     </p>
