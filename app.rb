@@ -1,10 +1,13 @@
 require 'sinatra'
 require 'sinatra/base'
 require 'rss'
+require 'json'
+require 'sequel'
+
 class Blog < Sinatra::Base; end
 
 class Blog
-
+  DB = Sequel.connect("sqlite://magic.db")
   get "/" do
     erb :index
   end
@@ -15,6 +18,10 @@ class Blog
 
   get "/projects" do
     erb :not_found
+  end
+
+  get "/projects/magic" do
+    erb :magic
   end
 
   get "/about" do
@@ -43,4 +50,16 @@ class Blog
     erb :not_found
   end
 
+  post "/projects/magic/profile/create" do
+
+    id = params[:profileName]
+    redirect to("/projects/magic/profile?name=#{id}")
+  end
+
+  get "/projects/magic/profile" do
+    erb :profile
+  end
+
+  post "/magic/deck/:cards" do
+  end
 end

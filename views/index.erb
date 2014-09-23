@@ -1,6 +1,77 @@
 <div class='posts'>
+  <div id='lambdas'>
+    <h2>Revisiting Ruby's Thread model - 2014-09-22</h2>
+    <p>
+      Threading in Ruby is strange. Ruby's <code>Thread</code> class is, from what I understand, the languages' answer to having concurrency (sometimes described as having only "quasi" concurrency - I don't know why that is). I tried using it in my BitTorrent client (unsuccesfully) months ago when I was writing it, and I tried again yesterday with limited success. For the first time the intention was to have threads be a primary way of handling numerous peers and their respective connection states (initializing connection, requesting/receiving pieces). It didn't work out quite out the way I was hoping it would - I was using blocking IO in my TCP connections, so my threads would terminate themselves early and often (again, I don't why). Non-blocking IO turned out to be much simpler and easier to implement without threads, so I ended up going with that. Still, I felt like I was missing out. I was hoping to write up something more concrete on this topic - conceptually I thought using threads would make the download process faster, but they didn't. In fact, the download process seems slightly slower (and the client starts crapping out on me near the end).
+    </p>
+
+    <h3>What Worked</h3>
+
+    <p>
+      Whenever the <a href='https://github.com/wismer/bit-torrent'>BitTorrent client</a> gets spun up, a list of peers is retrieved from the tracker's url. Before the below loop executes, a TCP connection request is sent to each peer (in a blocking manner). A window of 5 seconds is given to each peer to accept the connection. If exceeded (or if the request was denied), the peer is temporarily ignored.
+    </p>
+
+    <div>
+      <pre>
+        loop do
+          break if finished? <span class='comment'># loop breaks once all the pieces have successfully been downloaded</span>
+          @peers.each do |peer|
+            if peer.peer_state <span class='comment'># A boolean value, indicating whether the peer is considered 'active' or not</span>
+              peer.connection_state(@piece_index, have) <span class='comment'># handshaking/downloading process gets handled here</span>
+            else
+              peer.connect if Time.now.to_i % ((active_peers.size * 10) + 1) == 0
+            end
+          end
+          @piece_index.clean_peers <span class='comment'># prevents invalid piece selection</span>
+        end
+      </pre>
+    </div>
+
+    <p>
+      When the peer list is more than 30, the initialization process can take a long, long time. Particularly if the peer list is in the hundreds. If I am waiting 5 seconds for each connection to work, and nearly all of them timeout then we are talking about a delay of several minutes. If a TCP connection is left dormant for too long, the connection cuts. Not a terribly efficient process.
+    </p>
+
+    <p>
+      Writing a basic implementation of threads is pretty easy. All you have to do is this: <code>Thread.new { Your Code Here }</code>. Bam. Thread made/invoked. The thread is spun off, terminating only once it finishes executing the code. I ended up doing this before executing the above loop:
+      <div>
+        <pre>
+          @peers.each do |peer|
+            Thread.new { peer.connect }
+          end
+
+          loop { break if Thread.list.size <= 1 } <span class='comment'># this ensures every thread finishes before continuing</span>
+        </pre>
+      </div>
+
+      The result was awesome. Almost at the same time hundreds of TCP connection requests were being made. Something that took minutes now only took 15 seconds (for ~150 peers). Now would this make downloading faster?
+    </p>
+
+    <h3>I Have No Idea</h3>
+
+    <p>
+      In hindsight this was not a great project to try using threads in (or to write about). I forgot how complex the BitTorrent client was - I could identify at least 3-4 different places where I could insert threads but I had no idea how I was going to keep track of what they were doing or if they were working correctly. I enclosed the <code>peer.connection_state</code> method within the Thread block, but I knew that was going to cause a problem. If this is was within a loop, and the code being executed would not finish in time before the loop happens, then the thread propogated by that particular peer might be an exact duplicate of what it's instructions would be. Making some sort of condition could work, but some TCP connections are faster than others, so the entire process can get delayed by a single sluggish connection. Instead of having a thread run on <code>peer.connect</code>, I went deeper into the code hierarchy and attached it the <code>BufferState</code> class (The peer class is technically static - it's the buffer that changes constantly). This seemed to do the trick:
+
+      <div>
+        <pre>
+          def thread_connect(index, blk)
+            @thread ||= Thread.new { @buffer.messager(index, blk) }
+            if !@thread.alive?
+              @thread = Thread.new { @buffer.messager(index, blk) }
+            end
+          end
+        </pre>
+      </div>
+    </p>
+
+    <p>
+      Running this gave me strange results. After a few runs I came to the conclusion that it wasn't technically faster with threading and more often than not, the downloads could never finish. I don't know why - I believe it's a combination of my lack of understanding of threading and where to appropriately use them in the BitTorrent client.
+    </p>
+  </div>
+
+  </br>
+
   <div id='parsing'>
-    <h3>Parsing</h3>
+    <h2>Parsing - 2014-09-10</h2>
 
     <p>
       I never really worried about efficiency in programming before. In the past, the things I worked on at Hacker School and prior to it were generally over small things that didn't require speed. They just needed to simply work. But what if I were to work on something that was parsing a massive document? What then?
