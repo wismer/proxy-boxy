@@ -2,10 +2,14 @@ require 'sinatra'
 require 'sinatra/base'
 require 'rss'
 require 'json'
+require 'instagram'
+require './insta.rb'
 
 class Blog < Sinatra::Base; end
 
 class Blog
+  enable :sessions
+
   get "/" do
     erb :index
   end
@@ -42,5 +46,13 @@ class Blog
 
   get "/:anything" do
     erb :not_found
+  end
+
+  get "/statement" do
+    redirect Instagram.authorize_url(:redirect_uri => CALLBACK_URL)
+  end
+
+  get "/statement/oauth/callback" do
+
   end
 end
