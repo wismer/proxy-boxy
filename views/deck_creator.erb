@@ -1,0 +1,36 @@
+<script data-main="js/draft" src="js/require.js"></script>
+
+<div id='card-list'>
+  <select id='set-list'>
+    <option selected>Loading List...</option>
+  </select>
+
+  <form id='save-set'>
+    <label>Name for Set</label>
+    <input type='text' placeholder'enter'>
+    <button type='submit'>Save</button>
+  </form>
+</div>
+
+<div id='draft-board'>
+  <select id='set-filter'>
+    <option value="cmc" selected>CMC</option>
+    <option value="colors">Colors</option>
+    <option value="types">Types</option>
+  </select>
+  <div id='board'>
+
+  </div>
+</div>
+<script type='text/html' class='loadme'>
+  <div id='card-detail' style='position:fixed; margin-left: 300px;' >
+    <div class='card-img'>
+      <img src={{ img }} height='300' width='200'>
+    </div>
+
+    <div class='card-text'>
+      <p class='cost'>{{ cost }}</p>
+      <p class='text'>{{ text }}</p>
+    </div>
+  </div>
+</script>

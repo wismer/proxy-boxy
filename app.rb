@@ -1,58 +1,43 @@
-require 'sinatra'
-require 'sinatra/base'
-require 'rss'
-require 'json'
-require 'instagram'
-require './insta.rb'
+require "sinatra/activerecord"
+require "./models/post"
+require "./models/deck"
+require "./models/card"
 
 class Blog < Sinatra::Base; end
 
 class Blog
-  enable :sessions
+  register Sinatra::ActiveRecordExtension
 
   get "/" do
     erb :index
   end
 
   get "/blog" do
-    erb :index
+    @post = Post.all
+
+    erb :blog
   end
 
-  get "/projects" do
-    erb :not_found
+  get "/draft-creator" do
+    erb :deck_creator
   end
 
-  get "/about" do
-    erb :intro
+  get "/decks" do
+    @decks = Deck.all
+    erb :decks
   end
 
-  get "/rss", :provides => ['rss', 'atom', 'xml'] do
-    rss = RSS::Maker.make("2.0") do |maker|
-      maker.channel.language = "en"
-      maker.channel.author = "Matt Long"
-      maker.channel.updated = Time.new(2014, 9, 22)
-      maker.channel.link = "http://lankstrosity.us/new.rss"
-      maker.channel.title = ""
-      maker.channel.description = ""
-      maker.items.new_item do |item|
-        item.link = "http://lankstrosity.us/blog#threads"
-        item.title = "Revisiting Ruby's Thread Class"
-        item.updated = Time.new(2014, 9, 22).to_s
-      end
-    end
+  post "/decks" do
+    data = JSON.parse(request.body.read)
+    @deck = Deck.create(data["deck"])
+    @deck.cards.create(data['cards'])
 
-    rss.to_xml
+    redirect to("/")
   end
 
-  get "/:anything" do
-    erb :not_found
-  end
+  get "/decks/:id" do
+    @deck = Deck.find(params[:id])
 
-  get "/statement" do
-    redirect Instagram.authorize_url(:redirect_uri => CALLBACK_URL)
-  end
-
-  get "/statement/oauth/callback" do
-
+    erb :deck
   end
 end
