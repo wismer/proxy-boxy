@@ -18,13 +18,13 @@ define(["./underscore-min", "./backbone-min", "jquery"], function(_, Backbone, $
     },
 
     getColor: function() {
-      var colors = this.get("colors")
+      var colors = this.get("colors");
       if (colors) {
-        return colors.length > 1 ? "Multi" : colors[0]
+        return colors.length > 1 ? "multi" : colors[0].toLowerCase();
       } else if (this.isArtifact()) {
-        return "Artifact";
+        return "artifact";
       } else {
-        return "Land";
+        return "land";
       }
     },
 
