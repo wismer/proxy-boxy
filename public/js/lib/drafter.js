@@ -1,10 +1,37 @@
 define(["jquery", "draftview"], function($, DraftView){
 
   var Drafter = function() {
-    this.name = undefined
+    this.stats = {
+      "white": 0,
+      "black": 0,
+      "red": 0,
+      "blue": 0,
+      "green": 0,
+      "multi": 0,
+      "land": 0,
+      "artifact": 0
+    }
   }
 
   Drafter.prototype = {
+    buildAttributes: function(name, expansion) {
+      var cards = this.deck.get("player");
+      var self = this;
+      function categorize(pack, cid) {
+        var card = pack[0];
+        var color = card.getColor();
+
+        self.stats[color] += pack.length;
+      }
+
+      _.each(cards, categorize)
+
+      self.stats.name = name
+      self.stats.expansion = expansion
+
+      return { deck: self.stats }
+    },
+
     randomizeBooster: function(cards, booster) {
       function addBasicLands () {
         var lands = []
