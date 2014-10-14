@@ -31,8 +31,6 @@ class Blog
     data = JSON.parse(request.body.read)
     @deck = Deck.create(data["deck"])
     @deck.cards.create(data['cards'])
-
-    redirect to("/")
   end
 
   get "/decks/:id" do
