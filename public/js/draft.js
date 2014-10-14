@@ -25,16 +25,11 @@ require(["./app"], function(){
                                 sideboard: draft,
                                 player: {} });
       drafter.beginDraft();
-      $("#save-set").on("submit", function(e){
-        // e.preventDefault();
-        var name = $(this).children("input").val();
-        var draft = new Deck({
-          deck: {
-            name: name,
-            expansion: expansion.name
-          }
-        })
-
+      $("#save-set button").on("click", function(e){
+        e.preventDefault();
+        var name = $("#save-set input").val();
+        var attributes = drafter.buildAttributes(name, expansion.jsonData.code);
+        var draft = new Deck(attributes)
         var cards = _.map(drafter.deck.get("player"), function(pack, cid) {
           return { card_count: pack.length, multiverseid: cid }
         });
