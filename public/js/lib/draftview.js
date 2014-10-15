@@ -11,7 +11,7 @@ define(["backbone-min"], function(Backbone){
     },
 
     collapseImage: function(e) {
-      $("#card-detail").remove();
+      this.$el.children("#card-detail").remove();
     },
 
     moveCard: function(e) {
@@ -92,7 +92,6 @@ define(["backbone-min"], function(Backbone){
         })
 
         html += list;
-        // view.$el.html(list)
       }
       _.each([sideboard, player], applyTemplate)
       this.$el.children("#board").html(html);
