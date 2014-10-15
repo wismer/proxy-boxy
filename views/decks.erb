@@ -1,0 +1,22 @@
+<script data-main="js/decks" src="js/require.js"></script>
+<div id='decks'>
+  <table>
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Expansion</td>
+        <td>Makeup</td>
+      </tr>
+    </thead>
+
+    <tbody>
+        <% @decks.each do |deck| %>
+          <tr>
+            <td><%= deck.name %></td>
+            <td><%= deck.expansion %></td>
+            <td><div class='graph'><%= deck.button %></div></td>
+          </tr>
+        <% end %>
+    </tbody>
+  </table>
+</div>
