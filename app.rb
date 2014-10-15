@@ -27,6 +27,11 @@ class Blog
     erb :decks
   end
 
+  get "/deck-info/:id" do
+    @deck = Deck.find(params[:id])
+    @deck.cards_to_json
+  end
+
   post "/decks" do
     data = JSON.parse(request.body.read)
     @deck = Deck.create(data["deck"])
