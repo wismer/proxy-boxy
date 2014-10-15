@@ -15,15 +15,12 @@ require(["./app"], function(){
       })
 
       var draft = drafter.randomizeBooster(cards, expansion.jsonData.booster)
-
-      // drafter.sideboard = new Deck({name: "sideboard", cards: draft})
-      // drafter.player = new Deck({name: "player", cards: {}})
-
       drafter.deck = new Deck({ cards: cards,
                                 name: expansion.name,
                                 code: code,
                                 sideboard: draft,
                                 player: {} });
+
       drafter.beginDraft();
       $("#save-set button").on("click", function(e){
         e.preventDefault();
