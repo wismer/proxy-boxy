@@ -17,10 +17,11 @@ define(["jquery", "draftview"], function($, DraftView){
     buildAttributes: function(name, expansion) {
       var cards = this.deck.get("player");
       var self = this;
+      var count = 0;
       function categorize(pack, cid) {
         var card = pack[0];
         var color = card.getColor();
-
+        count += pack.length
         self.stats[color] += pack.length;
       }
 
@@ -29,7 +30,7 @@ define(["jquery", "draftview"], function($, DraftView){
       self.stats.name = name
       self.stats.expansion = expansion
 
-      return { deck: self.stats }
+      return { deck: self.stats, card_total: count }
     },
 
     randomizeBooster: function(cards, booster) {
