@@ -1,4 +1,4 @@
-define(["underscore-min", "./backbone-min", "jquery"], function(_, Backbone, $){
+define(["./backbone-min", "jquery"], function(Backbone, $){
   var Deck = Backbone.Model.extend({
     moveCard: function(origin, destination, cid) {
       var originSet = this.get(origin)
@@ -53,6 +53,62 @@ define(["underscore-min", "./backbone-min", "jquery"], function(_, Backbone, $){
         _.each(cards, sorter);
         return items;
       }
+    },
+
+    breakdown: function() {
+      var cards = this.get("cards")
+      var categories = {
+        color: {
+          white: 0,
+          red: 0,
+          green: 0,
+          blue: 0,
+          artifact: 0,
+          black: 0,
+          multi: 0,
+          land: 0
+        },
+
+        type: {
+          instant: 0,
+          land: 0,
+          sorcery: 0,
+          enchantment: 0,
+          creature: 0,
+          artifactCreature: 0,
+          artifact: 0
+        },
+
+        cost: [0,0,0,0,0,0,0,0,0,0,0,0]
+      };
+
+      function byColor (inDeck, cid) {
+        var cardColor = inDeck.card.getColor();
+        categories.color[cardColor.toLowerCase()] += inDeck.count
+      }
+
+      function byType (inDeck, cid) {
+        var type = inDeck.card.getType();
+        categories.type[type.toLowerCase()] += inDeck.count
+      }
+
+      function byCost (inDeck, cid) {
+        var cmc = inDeck.card.get("cmc")
+
+        if (cmc) {
+          categories.cost[cmc] += inDeck.count
+        }
+      }
+
+      _.each(cards, function(inDeck, cid){
+        byColor(inDeck, cid)
+        byCost(inDeck, cid)
+        byType(inDeck, cid)
+      })
+
+      debugger
+
+      return categories;
     }
   })
 

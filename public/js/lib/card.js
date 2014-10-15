@@ -14,7 +14,7 @@ define(["./underscore-min", "./backbone-min", "jquery"], function(_, Backbone, $
 
     getType: function() {
       var types = this.get("types")
-      return types.length > 1 ? types.join(" ") : types[0]
+      return types.length > 1 ? types.join("") : types[0]
     },
 
     getColor: function() {
