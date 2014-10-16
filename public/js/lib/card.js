@@ -41,7 +41,7 @@ define(["./underscore-min", "./backbone-min", "jquery"], function(_, Backbone, $
     subCategory: function(category) {
       if (category === "types") {
         return this.getType()
-      } else if (category === "cmc") {
+      } else if (category === "costs") {
         return this.getCost()
       } else {
         return this.getColor()
