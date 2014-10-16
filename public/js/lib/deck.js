@@ -3,7 +3,6 @@ define(["./backbone-min", "jquery"], function(Backbone, $){
     moveCard: function(origin, destination, cid) {
       var originSet = this.get(origin)
       var destSet = this.get(destination)
-      // debugger
       var card = originSet[cid].pop();
 
       if (originSet[cid].length === 0) {
@@ -30,6 +29,7 @@ define(["./backbone-min", "jquery"], function(Backbone, $){
       this.set({cards: cards})
     },
 
+
     collateCards: function(category) {
       var player = this.get("player")
       var sideboard = this.get("sideboard")
@@ -55,59 +55,55 @@ define(["./backbone-min", "jquery"], function(Backbone, $){
       }
     },
 
-    breakdown: function() {
-      var cards = this.get("cards")
+    breakdown: function(painter) {
+      var cards = this.get("cards");
+      var set = [0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+      var costs = {};
+
+      for(var i = 0; i < 13; i++) {
+        costs[i] = { count: 0, text: i, paint: painter(i) }
+      }
+
+      costs.land = { count: 0, text: "Land", paint: "gray" };
+
       var categories = {
-        color: {
-          white: 0,
-          red: 0,
-          green: 0,
-          blue: 0,
-          artifact: 0,
-          black: 0,
-          multi: 0,
-          land: 0
+        colors: {
+          white: { count: 0, paint: "#F3F5BF" },
+          red: { count: 0, paint: "#820000" },
+          green: { count: 0, paint: "#2B794D" },
+          blue: { count: 0, paint: "#93C7F9" },
+          artifact: { count: 0, paint: "#675A52" },
+          black: { count: 0, paint: "#414141" },
+          multi: { count: 0, paint: "#FFD2A7" },
+          land: { count: 0, paint: "#AAAAAA" }
         },
 
-        type: {
-          instant: 0,
-          land: 0,
-          sorcery: 0,
-          enchantment: 0,
-          creature: 0,
-          artifactCreature: 0,
-          artifact: 0
+        types: {
+          instant: { count: 0, paint: "#F3F5BF" },
+          land: { count: 0, paint: "#2B794D" },
+          sorcery: { count: 0, paint: "#414141" },
+          enchantment: { count: 0, paint: "#93C7F9" },
+          creature: { count: 0, paint: "#AAAAAA" },
+          artifactCreature: { count: 0, paint: "#675A52" },
+          artifact: { count: 0, paint: "#FF73FD" }
         },
 
-        cost: [0,0,0,0,0,0,0,0,0,0,0,0]
+        costs: costs
       };
 
-      function byColor (inDeck, cid) {
-        var cardColor = inDeck.card.getColor();
-        categories.color[cardColor.toLowerCase()] += inDeck.count
+      function filter(inDeck, cid) {
+        var card = inDeck.card;
+
+        _.each(categories, function(val, key, list){
+          var subtype = card.subCategory(key).toString().toLowerCase();
+
+          if (subtype) {
+            list[key][subtype].count += inDeck.count
+          }
+        })
       }
 
-      function byType (inDeck, cid) {
-        var type = inDeck.card.getType();
-        categories.type[type.toLowerCase()] += inDeck.count
-      }
-
-      function byCost (inDeck, cid) {
-        var cmc = inDeck.card.get("cmc")
-
-        if (cmc) {
-          categories.cost[cmc] += inDeck.count
-        }
-      }
-
-      _.each(cards, function(inDeck, cid){
-        byColor(inDeck, cid)
-        byCost(inDeck, cid)
-        byType(inDeck, cid)
-      })
-
-      debugger
-
+      _.each(cards, filter)
       return categories;
     }
   })
