@@ -88,3 +88,11 @@ div.card-text {
   float: right;
   text-align: right;
 }
+
+#viz {
+  float: right;
+}
+
+#viz div {
+  margin: 20px;
+}
