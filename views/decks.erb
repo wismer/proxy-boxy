@@ -14,15 +14,15 @@
           <tr>
             <td><%= deck.name %></td>
             <td><%= deck.expansion %></td>
-            <td><div class='graph'><%= deck.button %></div></td>
+            <td><%= deck.graph %></td>
           </tr>
         <% end %>
     </tbody>
   </table>
 
-  <div id='viz'>
-    <div class='colors'></div>
-    <div class='types'></div>
-    <div class='costs'></div>
+  <div id='vizualizer'>
+    <div class='colors-pie'></div>
+    <div class='types-pie'></div>
+    <div class='costs-pie'></div>
   </div>
 </div>
