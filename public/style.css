@@ -3,6 +3,7 @@
 html {
   font-family: 'Open Sans', sans-serif;
   font-size: 1.25em;
+  background-color: #838383;
 }
 
 #sidebar {
@@ -94,5 +95,27 @@ div.card-text {
 }
 
 #viz div {
-  margin: 20px;
+  height: 40px;
+  width: 80px;
+  text-align: center;
+  vertical-align: center;
+  line-height: 40px;
+  color: white;
+  background-color: #292C2F;
+  float: left;
+}
+
+#viz div:hover {
+  vertical-align: center;
+  background-color: #E2E2E2;
+  color: #292C2F;
+}
+
+#card-detail {
+  background-color: black;
+  padding: 20px;
+}
+
+#vizualizer {
+  float: right;
 }
