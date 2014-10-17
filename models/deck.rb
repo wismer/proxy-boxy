@@ -5,6 +5,16 @@ class Deck < ActiveRecord::Base
     "<button value='#{self.id}' exp='#{self.expansion}'>Show Card Breakdown</button>"
   end
 
+  def graph
+    """
+    <div id='viz' exp='#{self.expansion}' deck='#{self.id}'>
+      <div class='costs'>COSTS</div>
+      <div class='types'>TYPES</div>
+      <div class='colors'>COLORS</div>
+    </div>
+    """
+  end
+
   def cards_to_json
     cards = self.cards
     hash = {}

@@ -3,6 +3,7 @@ require "./models/post"
 require "./models/deck"
 require "./models/card"
 
+
 class Blog < Sinatra::Base; end
 
 class Blog
