@@ -11,6 +11,7 @@ class Deck < ActiveRecord::Base
       <div class='costs'>COSTS</div>
       <div class='types'>TYPES</div>
       <div class='colors'>COLORS</div>
+      <div>VIEW</div>
     </div>
     """
   end

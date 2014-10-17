@@ -34,6 +34,10 @@ define(["jquery", "draftview"], function($, DraftView){
     },
 
     randomizeBooster: function(cards, booster) {
+      // unfortunately there is no consistent format for the booster field
+      // for magic sets. Sometimes they are array of arrays containing the
+      // relative rarities, sometimes just a simple array, but with non-cards
+      // thrown into the mix like "marketing" and "token" - useless.
       function addBasicLands () {
         var lands = []
         var basic = _.filter(cards, function(card){
@@ -118,10 +122,6 @@ define(["jquery", "draftview"], function($, DraftView){
       return req;
     },
 
-    renderLists: function() {
-
-    },
-
     mergeCards: function(cardData) {
       var cards = {};
 
@@ -140,10 +140,6 @@ define(["jquery", "draftview"], function($, DraftView){
       })
 
       return cards;
-    },
-
-    textRenderer: function(text) {
-
     },
 
     renderCard: function(elem) {
@@ -189,12 +185,6 @@ define(["jquery", "draftview"], function($, DraftView){
       var deck = this.deck;
       this.view = new DraftView({model: deck});
       this.view.render(this.collector);
-    },
-
-    imgLink: function(id) {
-
-      // var card = _.find(this.draft.get("cards"), function(c){ return id === c.id })
-      // return
     }
   }
 

@@ -44,4 +44,9 @@ class Blog
 
     erb :deck
   end
+
+  get "/magic-game" do
+    @deck = Deck.find(params[:id])
+    erb :magic
+  end
 end
