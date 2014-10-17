@@ -1,21 +1,20 @@
 require(["./app"], function(){
   require(["jquery", "card", "deck", "d3"], function($, Card, Deck, d3){
-    var request = function(url) {
-      var result;
+    var collection = {};
+
+    var request = function(id, url, type) {
       $.ajax({
         url: url,
-        async: false,
         method: "GET",
         dataType: 'json',
         success: function(data, err, xhr) {
-          result = data;
+          collection[id][type] = data;
         }
       })
-
-      return result;
     }
 
-    var createCircles = function(cardData, selector) {
+    var createCircles = function(cardData, filter) {
+      d3.selectAll("svg").remove();
       var color = d3.scale.category20();
       var radius = Math.min(400, 400) / 2;
 
@@ -23,7 +22,7 @@ require(["./app"], function(){
       function remapToArray(data) {
 
         var tally = _.map(data, function(val, key){
-          return { text: key, count: val.count, paint: val.paint };
+          return { text: key + " - " + val.count, count: val.count, paint: val.paint };
         });
         return _.filter(tally, function(val){
           return val.count > 0;
@@ -40,18 +39,22 @@ require(["./app"], function(){
           .sort(null)
           .value(function(d){ return d.count; });
 
-        var svg = d3.select("#viz " + section).append("svg")
+        var svg = d3.select("#vizualizer div." + section).append("svg")
           .attr("height", 400)
           .attr("width", 400)
 
         var arcs = svg.selectAll("." + elemClass).data(pieChart(data)).enter()
           .append("g")
           .attr("class", elemClass)
-          .attr("transform", "translate(200,200)");
+          .attr("transform", "translate(600,200)")
+
+        arcs.transition().delay(500).attr("transform", "translate(200,200)")
+
 
         arcs.append("path")
           .attr("d", arc)
           .style("fill", function(d){ return d3.rgb(d.data.paint); })
+
 
         arcs.append("text")
           .attr("transform", function(d){ return "translate(" + arc.centroid(d) + ")"; })
@@ -59,30 +62,43 @@ require(["./app"], function(){
           .style("text-anchor", "middle")
           .text(function(d){ return d.data.text; })
 
+
+
       }
 
-      renderCircle("div.costs", "costs", cardData.costs);
-      renderCircle("div.types", "types", cardData.types);
-      renderCircle("div.colors", "colors", cardData.colors);
-    }
+      renderCircle(filter + "-pie", filter, cardData[filter]);
+    };
 
-    $("table button").click(function(e){
-      var expansion = $(this).attr("exp")
-      var cardInfo = request("/deck-info/" + $(this).val())
-      var deckInfo = request("http://mtgjson.com/json/" + expansion + ".json")
+    $("#viz div").mouseenter(function(e){
+      var deckID = $(this).parent("div").attr("deck");
+      var expansion = $(this).parent("div").attr("exp");
       var cards = {};
-      _.each(deckInfo.cards, function(card){
-        var id = card.multiverseid
-        if (cardInfo[id]) {
-          cards[id] = {
-            card: new Card(card),
-            count: cardInfo[id]
+      var filter = $(this).attr('class')
+      var data;
+
+      if (!collection[deckID]) {
+        collection[deckID] = {};
+        request(deckID, "http://mtgjson.com/json/" + expansion + ".json", "cards")
+        request(deckID, "/deck-info/" + deckID, "deck")
+      } else if (collection[deckID]['cards'] && collection[deckID]['deck']) {
+        _.each(collection[deckID]['cards'].cards, function(card){
+          var id = card.multiverseid
+          var deck = collection[deckID]['deck'][id]
+          if (deck) {
+            cards[id] = {card: new Card(card), count: deck }
           }
-        }
-      })
-      var deck = new Deck({cards: cards})
-      var data = deck.breakdown(d3.scale.category20());
-      createCircles(data)
+        })
+
+        var deck = new Deck({cards: cards});
+        data = deck.breakdown(d3.scale.category20());
+      } else {
+        $(this).css("background-color", "yellow")
+      }
+
+      if (data) {
+        createCircles(data, filter);
+      }
     })
+
   })
 })
