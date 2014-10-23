@@ -41,28 +41,45 @@ require(["./app"], function(){
 
         var svg = d3.select("#vizualizer div." + section).append("svg")
           .attr("height", 400)
-          .attr("width", 400)
+          .attr("width", 800)
 
         var arcs = svg.selectAll("." + elemClass).data(pieChart(data)).enter()
           .append("g")
           .attr("class", elemClass)
           .attr("transform", "translate(600,200)")
 
-        arcs.transition().delay(500).attr("transform", "translate(200,200)")
+        var legend = svg.selectAll('.legend').data(data).enter()
+          .append('g')
+          .attr('class', 'legend')
 
+        legend.append('rect')
+          .attr('height', 30)
+          .attr('width', 30)
+          .attr('y', function(d, i){ return i * 35 })
+          .attr('x', 900)
+          .style('fill', function(d) { return d3.rgb(d.paint) })
+          .style('stroke', 'black')
+          .transition()
+          .delay(500)
+          .attr('x', 440)
+
+
+        legend.append('text')
+          .attr('x', 700)
+          .transition()
+          .delay(500)
+          .attr('x', 480)
+          .attr('y', function(d,i){ return (i * 35) + 22 })
+          .attr('dx', "1.0em")
+          .style('text-anchor', 'left')
+          .text(function(d){ return d.text.toUpperCase(); })
+
+        arcs.transition().delay(500).attr("transform", "translate(200,200)")
 
         arcs.append("path")
           .attr("d", arc)
           .style("fill", function(d){ return d3.rgb(d.data.paint); })
-
-
-        arcs.append("text")
-          .attr("transform", function(d){ return "translate(" + arc.centroid(d) + ")"; })
-          .attr("dy", "1.0em")
-          .style("text-anchor", "middle")
-          .text(function(d){ return d.data.text; })
-
-
+          .style('stroke', 'black')
 
       }
 
