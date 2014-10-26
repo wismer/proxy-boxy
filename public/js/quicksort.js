@@ -4,8 +4,9 @@ require(["./app"], function(){
     var height = 900;
     var width = 1200;
     var timer = 1000;
-    var numbers = [5,21,14,1,3,6,22,27,12,17,11,13,4];
+    var numbers = [15,5,16,26,21,14,1,3,6,22,27,12,17,11,13,4];
     var offset = 0;
+    var steps = {};
     var bars = svg.selectAll('.bars')
       .data(numbers).enter().append('g')
       .attr('class', 'bars')
@@ -29,18 +30,18 @@ require(["./app"], function(){
         return d3.selectAll('g.bars').filter(function(d,i){
           return d === num
         })
-      }
+      };
 
       function selectBarByX(x) {
         return d3.selectAll('g.bars').filter(function(d,i){
           return d3.select(this).select('rect').attr('x') === x.toString();
         })
-      }
+      };
 
       function highlight(bar) {
         bar.select('rect').style('fill', 'red').transition().delay(500)
           .style('fill', 'blue')
-      }
+      };
 
       function locX(num) {
         var bar = selectBar(num);
@@ -50,64 +51,72 @@ require(["./app"], function(){
         } else {
           return false;
         }
-      }
+      };
 
       function notEvaluated(num) {
         return _.some(array, function(n){ return n === num });
       }
 
-      function change(min, max, activePivot) {
-        // if (offset === 120) debugger
-        var behindPivot = _.some(array, function(n){
-          return n === selectBarByX(activePivot.x + 60).datum();
+      function activeBars(range) {
+        var bars = _.map(array, function(e){
+          return {
+            bar: selectBar(e),
+            x: locX(e)
+          }
         })
 
-        if (!behindPivot) {
+        var max = _.max(bars, function(bar){ return bar.x })
+        var min = _.min(bars, function(bar){ return bar.x })
+        return { max: max, min: min }
+      };
 
-        }
+      function change(min, max, currentBar) {
 
-        while (max >= min) {
-
-          // debugger
-          var bar = selectBarByX(max);
-
+        var gap = currentBar.x;
+        while (gap !== max) {
+          gap += 60;
+          var bar = selectBarByX(gap);
           if (bar) {
-            if (max <= min) {
-              bar.select('rect').transition().attr('x', 720)
-                .style('fill', 'blue');
+            bar.select('rect').transition().attr('x', gap - 60)
+              .style('fill', 'blue');
 
-              bar.select('text').transition().attr('x', 745);
-            } else {
-              bar.select('rect').transition().attr('x', max - 60)
-                .style('fill', 'blue');
-
-              bar.select('text').transition().attr('x', max - 35);
-            }
+            bar.select('text').transition().attr('x', gap - 35);
           }
-
-          max -= 60;
         }
+
+        if (currentBar.x === min) {
+          var bar = currentBar.bar;
+          bar.select('rect').transition().attr('x', max)
+            .style('fill', 'blue');
+
+          bar.select('text').transition().attr('x', max + 25);
+        }
+      };
+
+      var range = activeBars(true);
+
+      if (!steps[pivot]) {
+        steps[pivot] = {};
+        steps[pivot].max = range.max.x;
+        steps[pivot].min = range.min.x;
       }
 
-      var active = {
-        pivot: { bar: selectBar(pivot), x: locX(pivot) },
-        currentBar: { bar: selectBar(n), x: locX(n) },
-        offset: offset
-      }
+      var pivotBar = selectBar(pivot);
+      var currentBar = { bar: selectBar(n), x: locX(n) };
 
-      highlight(active.pivot.bar);
-      highlight(active.currentBar.bar);
-      console.log(pivot, n)
+      highlight(pivotBar);
+      highlight(currentBar.bar);
+
       if (pivot < n) {
-        change(offset, 720, active.pivot);
+        change(steps[pivot].min, steps[pivot].max + 60, currentBar)
       } else {
-        offset += 60;
+        steps[pivot].min += 60;
       }
     }
 
     function step(pivot, n, array, i) {
       setTimeout(move, timer += 1000, pivot, n, array, i)
-    }
+    };
 
     function quicksort(array, timer, original) {
 
