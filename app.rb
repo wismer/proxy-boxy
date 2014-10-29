@@ -79,6 +79,6 @@ class Blog
   end
 
   get "/statement" do
-    redirect Instagram.authorize_url(:redirect_uri => "http://lankstrosity.us/oauth/callback")
+    redirect Instagram.authorize_url(:redirect_uri => "http://lankstrosity.us/statement/oauth/callback")
   end
 end
