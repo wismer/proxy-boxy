@@ -57,9 +57,9 @@ class Blog
     erb :magic
   end
 
-  get "/user/content/:user_id" do
+  get "/user/:user_id" do
     client = Instagram.client(:access_token => session[:access_token])
-    # client.
+    client.user(params[:user_id])
   end
 
   get "/instagram/search/:username" do
