@@ -1,5 +1,24 @@
 define(["./backbone-min", "jquery"], function(Backbone, $){
   var Deck = Backbone.Model.extend({
+    prepDeck: function() {
+      var deck = [];
+
+      _.each(this.get('cards'), function(c, cid){
+        for (i = 0; i !== c.count; i++) {
+          deck.push(c.card);
+        }
+      })
+      return deck;
+    },
+
+    loadCards: function() {
+      
+    },
+
+    drawCard: function() {
+      return this.get('cards').shift();
+    },
+
     moveCard: function(origin, destination, cid) {
       var originSet = this.get(origin)
       var destSet = this.get(destination)
@@ -28,7 +47,6 @@ define(["./backbone-min", "jquery"], function(Backbone, $){
 
       this.set({cards: cards})
     },
-
 
     collateCards: function(category) {
       var player = this.get("player")

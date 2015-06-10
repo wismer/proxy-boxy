@@ -1,4 +1,4 @@
 require 'sinatra'
 require './app'
 
-run Blog
+run ShieldsUp::Server

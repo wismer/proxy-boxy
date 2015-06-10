@@ -2,6 +2,86 @@ require(["./app"], function(){
   require(["jquery", "card", "deck", "d3"], function($, Card, Deck, d3){
     var collection = {};
 
+    var MarkovGame = function() {
+      this.node = collection['node'];
+      this.steps = 0;
+    }
+
+    MarkovGame.prototype = {
+      finished: function() {
+        return this.node.size === 0;
+      }
+    }
+
+
+    var MarkovNode = function(deck) {
+      this.deck = deck.prepDeck();
+      this.current = "land";
+      this.size = 7;
+    }
+
+    MarkovNode.prototype = {
+      mulligan: function() {
+        var current = this.current;
+        var hand = this.drawHand(this.size)
+        var cards = _.map(hand, function(card){return card.get('name'); })
+        var allLands = _.all(hand, function(card){ return card.isBasicLand() })
+        var noLands = _.all(hand, function(card){ return !card.isBasicLand() })
+
+        var count = _.countBy(hand, function(card){
+          return card.isBasicLand() ? "land" : "spell";
+        })
+
+        if (!count.spell) {
+          count.spell = 0;
+        } else if (!count.land) {
+          count.land = 0;
+        }
+
+        if (count.lands === 0) {
+          hand.pop();
+          this.size -= 1
+        } else if (count.lands <= 2) {
+          var land = _.find(this.deck, function(card){ return card.isBasicLand(); })
+          hand.push(land);
+        } else if (count.spell === 0) {
+          hand.pop();
+          this.size -= 1;
+        } else if (count.spell <= 2) {
+          var spellCard = _.find(this.deck, function(card){ return !card.isBasicLand(); })
+          hand.push(spellCard);
+        }
+
+        var deckStats = _.countBy(this.deck, function(card){ return card.isBasicLand() ? "land" : "spell"; })
+        deckStats.land += count.land
+        deckStats.spell += count.spell
+        console.log(deckStats.spell / deckStats.land)
+        this.discardHand(hand);
+      },
+
+      discardHand: function(hand) {
+        var deck = this.deck.concat(hand)
+        this.deck = _.shuffle(deck);
+      },
+
+      drawHand: function(n) {
+        var hand = [];
+        for (i = 0; i < n; i++) {
+          var card = this.deck.shift();
+          hand.push(card);
+        }
+        return hand;
+      },
+
+      turn: function() {
+        if (card.isBasicLand()) {
+          return game.turn;
+        } else {
+
+        }
+      }
+    }
+
     var request = function(id, url, type) {
       $.ajax({
         url: url,
@@ -107,7 +187,9 @@ require(["./app"], function(){
         })
 
         var deck = new Deck({cards: cards});
+        collection[deckID]['setup'] = deck;
         data = deck.breakdown(d3.scale.category20());
+        collection['node'] = new MarkovNode(deck);
       } else {
         $(this).css("background-color", "yellow")
       }
@@ -117,5 +199,19 @@ require(["./app"], function(){
       }
     })
 
+
+
+    $("#markov").click(function(){
+      if (collection['node']) {
+        var game = new MarkovGame();
+        function nodeCycle() {
+          this.node.mulligan();
+        }
+        var test = setInterval(nodeCycle.bind(game), 1000)
+        if (game.finished()) {
+          clearInterval(test);
+        }
+      }
+    })
   })
 })

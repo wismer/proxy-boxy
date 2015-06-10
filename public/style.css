@@ -119,3 +119,43 @@ div.card-text {
 #vizualizer {
   float: right;
 }
+
+#cards-in-play {
+  background-color: #E2E2E2;
+  width: 1400px;
+  height: 600px;
+  float: left;
+}
+
+#player-two {
+  height: 400px;
+  width: 1400px;
+}
+
+#player-one {
+  height: 400px;
+  width: 1400px;
+}
+
+div.card-stacks {
+  height: 400px;
+  width: 300px;
+  margin: 10px;
+}
+
+#player-one div.card-stacks {
+  float:left;
+  background-color: #E2E2E2;
+}
+
+#player-two div.card-stacks {
+  float: right;
+  background-color: #E2E2E2;
+}
+/*
+div.hand {
+  height: 400px;
+  width: 950px;
+  background-color: #E2E2E2;
+}*/
+

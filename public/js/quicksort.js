@@ -17,7 +17,8 @@ require(["./app"], function(){
       .attr('x', function(d,i){ return i * 60; })
       .attr('height', function(d,i){ return d * 15 })
       .attr('width', function(d,i){ return 50; })
-      .style('fill', 'blue')
+      .style('fill', 'blue')``
+      .style('stroke', 'black')
 
     bars.append('text')
       .attr('y', function(d,i){ return height + 25 })
@@ -38,8 +39,8 @@ require(["./app"], function(){
         })
       };
 
-      function highlight(bar) {
-        bar.select('rect').style('fill', 'red').transition().delay(500)
+      function highlight(bar, delay) {
+        bar.select('rect').style('fill', 'red').transition().delay(delay)
           .style('fill', 'blue')
       };
 
@@ -94,6 +95,7 @@ require(["./app"], function(){
       };
 
       var range = activeBars(true);
+      var pivotBar = selectBar(pivot);
 
       if (!steps[pivot]) {
         steps[pivot] = {};
@@ -101,11 +103,9 @@ require(["./app"], function(){
         steps[pivot].min = range.min.x;
       }
 
-      var pivotBar = selectBar(pivot);
       var currentBar = { bar: selectBar(n), x: locX(n) };
 
-      highlight(pivotBar);
-      highlight(currentBar.bar);
+      highlight(currentBar.bar, 1000);
 
       if (pivot < n) {
         change(steps[pivot].min, steps[pivot].max + 60, currentBar)

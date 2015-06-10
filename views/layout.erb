@@ -1,7 +1,11 @@
 <title>Panta Rhei</title>
 <head>
   <link rel="stylesheet" type="text/css" href="/style.css">
+  <script src="http://fb.me/react-0.11.2.js"></script>
+  <script src="http://fb.me/JSXTransformer-0.11.2.js"></script>
+  <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
 </head>
+
 <div id="sidebar">
   <img src="/img/me.jpg">
   <nav>
@@ -19,6 +23,14 @@
           <li><a href="/draft-creator">Make a Magic Deck! (WIP)</a></li>
           <li><a href="/decks">View Decks Made (WIP)</a></li>
         </ul>
+        <script type='text/jsx'>
+          /** @jsx React.DOM */
+          React.renderComponent(
+            <h1>Hello, world!</h1>,
+            document.getElementById('example')
+          );
+        </script>
+
       </li>
     </ul>
   </nav>
